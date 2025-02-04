@@ -1,5 +1,5 @@
 let product = "Socks";
-
+//git add * , git commit -m "name" , potom push i vse//
 app = new Vue({
     el: '#app',
     data: {
@@ -8,6 +8,18 @@ app = new Vue({
         altText: "A pair of socks",
         inStock: true,
         inventory: 100,
-        details: ['80% cotton', '20% polyester', 'Gender-neutral']
+        details: ['80% cotton', '20% polyester', 'Gender-neutral'],
+
+        variants: [
+            {
+                variantId: 2234,
+                variantColor: 'green'
+            },
+            {
+                variantId: 2235,
+                variantColor: 'blue'
+            }
+        ],
+
     }
-})git init
+})
