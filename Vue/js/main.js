@@ -28,58 +28,60 @@ Vue.component('card-component', {
     </div>
 </div>
     `
-})
+});
+
 new Vue({
     el: '#app',
-    data(){
+    data() {
         return {
             card: [],
             newCardTitle: '',
-            newCardItems: ['','','']
+            newCardItems: ['', '', '']
         }
     },
-    created(){
+    created() {
         this.loadCrads();
+        this.loadCards();
     },
     computed: {
-        firstColumnCards(){
-            return this.cards.filter(card => card.column === 1).slice(0,3)
+        firstColumnCards() {
+            return this.cards.filter(card => card.column === 1).slice(0, 3)
         },
-        secondColumnCards(){
-            return this.cards.filter(card => card.column === 2).slice(0,5)
+        secondColumnCards() {
+            return this.cards.filter(card => card.column === 2).slice(0, 5)
         },
-        thirdColumnCards(){
+        thirdColumnCards() {
             return this.cards.filter(card => card.column === 3)
         },
-        isSecondColumnFull(){
+        isSecondColumnFull() {
             return this.secondColumnCards.length >= 5
         },
-        anyFirstColumnOver50(){
+        anyFirstColumnOver50() {
             return this.firstColumnCards.some(card => {
-                const completed = card.items.filter(i =>i.completed).length
+                const completed = card.items.filter(i => i.completed).length
                 return completed / card.items.length > 0.5
             })
         },
-        isFirstColumnBlocked(){
+        isFirstColumnBlocked() {
             return this.isSecondColumnFull && this.anyFirstColumnOver50
         }
     },
-    watch:{
-        cards:{
+    watch: {
+        cards: {
             deep: true,
-            handler(cards){
+            handler(cards) {
                 cards.forEach(card => {
                     const completed = card.items.filter(i => i.completed).length
                     const total = card.item.length
                     const progress = completed / total
 
-                    if (card.column === 1 && progress > 0.5){
-                        if(this.secondColumnCards.length < 5){
+                    if (card.column === 1 && progress > 0.5) {
+                        if (this.secondColumnCards.length < 5) {
                             card.column = 2
                         }
-                    } else if ( card.column === 2 && progress === 1) {
+                    } else if (card.column === 2 && progress === 1) {
                         card.column = 3
-                        if(!card.completedDate){
+                        if (!card.completedDate) {
                             card.completedDate = new Date().toLocaleString()
                         }
                     }
@@ -89,18 +91,18 @@ new Vue({
         }
     },
     method: {
-        addItem(){
-            if(this.newCardItems.length < 5){
+        addItem() {
+            if (this.newCardItems.length < 5) {
                 this.newCardItems.push('')
             }
         },
-        removeItem(){
-            if(this.new.CardItems.length > 3){
+        removeItem() {
+            if (this.new.CardItems.length > 3) {
                 this.newCardItems.pop()
             }
         },
-        createCard(){
-            if(!this.newCardTitle.trim() || this.newCardItems.some(i => !i.trim())){
+        createCard() {
+            if (!this.newCardTitle.trim() || this.newCardItems.some(i => !i.trim())) {
                 alert('PLease fill all fields')
                 return
             }
@@ -116,13 +118,14 @@ new Vue({
             this.newCardTitle = ''
             this.newCardItems = ['', '', '']
         },
-        saveCards(){
-            localStorage.setItem('cards',JSON.stringify(this.cards))
+        saveCards() {
+            localStorage.setItem('cards', JSON.stringify(this.cards))
         },
-        loadCards(){
+        loadCards() {
             const savedCards = localStorage.getItem('cards')
-            if(savedCards) {
+            if (savedCards) {
                 this.cards = JSON.parse(savedCards)
             }
         }
     }
+})
