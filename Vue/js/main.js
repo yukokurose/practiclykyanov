@@ -1,4 +1,3 @@
-//git add * , git commit -m "name" , potom push i vse//
 Vue.component('task-card',{
     props: ['card', 'editable'],
     template: `
@@ -24,6 +23,71 @@ Vue.component('task-card',{
     
     `
 });
+
+Vue.component('kanban-column', {
+    props:['title','cards','canCreate'],
+    template: `
+        <div class="column">
+            <h2>{{ title }}</h2>
+            <button v-if="canCreate" @click="$emit('create')"
+            class="btn-primary">
+                + Новая задача </button>
+            <div v-dor="card in cards" :key="card.id">
+                <task-card :card="card"
+                :editable="true"
+                @edit="$emit('edit', card)"
+                @delete="$emit('delete', card)">
+            
+                <template v-slot:action>
+                    <button v-for="action in getActions(card)"
+                        @click="handleAction(action, card)"
+                        :class="action.class">
+                        {{ action.label }}
+                    </button>
+                </template>
+            </task-card>
+        </div>
+    </div>
+`,
+    methods:{
+        getAction(card){
+            const actions = []
+            switch(card.column){
+                case 1:
+                    actions.push(
+                        {label: 'В работу', type: 'move', target: 2, class: 'btn-primary'}
+                    )
+                    break
+
+                case 2:
+                    actions.push(
+                        {label: 'В тестирование', type: 'move', target:32, class: 'btn-primary'}
+                    )
+                    break
+
+                case 3:
+                    actions.push(
+                        {label: 'Вернуть', type: 'return', class: 'btn-primary'},
+                        {label: 'Завершить', type: 'move', target: 4, class: 'btn-primary'}
+                    )
+                    break
+            }
+            return actions
+        },
+        handleAction(action, card){
+            if(action.type === 'move'){
+                this.$emit('move', card, action.target)
+            } else if(action.type === 'return'){
+                this.$emit('return',card)
+            } else if(action.type === 'edit'){
+                this.$emit('edit',card)
+            } else if(action.type === 'delete'){
+                this.$emit('delete',card)
+            }
+        }
+    }
+});
+
 
 new Vue({
     el: '#app',
