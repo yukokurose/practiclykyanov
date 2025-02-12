@@ -1,136 +1,103 @@
 //git add * , git commit -m "name" , potom push i vse//
-Vue.component('card-component', {
-    props: ['card', 'editable'],
-    computed: {
-        progress() {
-            const completed = this.card.items.filter(i => i.completed).length;
-            return (completed / this.card.items.length) * 100;
-        }
-    },
-    template: `
-                <div class="card">
-                    <h3>{{ card.title }}</h3>
-                    <div class="progress-bar">
-                        <div class="progress" :style="{ width: progress + '%' }"></div>
-                    </div>
-                    <ul>
-                        <li v-for="(item, index) in card.items" :key="index">
-                            <label>
-                                <input 
-                                    type="checkbox" 
-                                    v-model="item.completed" 
-                                    :disabled="!editable || card.column === 3">
-                                <span :style="{ 
-                                    textDecoration: item.completed ? 'line-through' : 'none',
-                                    color: item.completed ? '#95a5a6' : '#2c3e50'}">
-                                    {{ item.text }}
-                                </span>
-                            </label>
-                        </li>
-                    </ul>
-                    <div v-if="card.completedDate" class="completed-date">
-                        Completed: {{ card.completedDate }}
-                    </div>
-                </div>
-            `
-});
-
 new Vue({
     el: '#app',
-    data() {
+    data(){
         return {
             cards: [],
-            newCardTitle: '',
-            newCardItems: ['', '', '']
+            selectedCard: null,
+            showEditModal: false,
+            showReturnModal: false,
+            currentCard: null,
         }
     },
     created() {
-        this.loadCards();
+        this.loadCards()
     },
     computed: {
-        firstColumnCards() {
-            return this.cards.filter(card => card.column === 1).slice(0, 3);
+        plannedTasks(){
+            return this.cards.filter( c => c.column === 1)
         },
-        secondColumnCards() {
-            return this.cards.filter(card => card.column === 2).slice(0, 5);
+        inProgressTasks(){
+            return this.cards.filter(c => c.column === 2)
         },
-        thirdColumnCards() {
-            return this.cards.filter(card => card.column === 3);
+        testingTask(){
+            return this.cards.filter(c => c.column === 3)
         },
-        isSecondColumnFull() {
-            return this.secondColumnCards.length >= 5;
-        },
-        anyFirstColumnOver50() {
-            return this.firstColumnCards.some(card => {
-                const completed = card.items.filter(i => i.completed).length;
-                return completed / card.items.length > 0.5;
-            });
-        },
-        isFirstColumnBlocked() {
-            return this.isSecondColumnFull && this.anyFirstColumnOver50;
-        }
-    },
-    watch: {
-        cards: {
-            deep: true,
-            handler(cards) {
-                cards.forEach(card => {
-                    const completed = card.items.filter(i => i.completed).length;
-                    const total = card.items.length;
-                    const progress = completed / total;
-
-                    if (card.column === 1 && progress > 0.5) {
-                        // Проверяем есть ли место во втором столбце
-                        if (this.secondColumnCards.length < 5) {
-                            card.column = 2;
-                        }
-                    } else if (card.column === 2 && progress === 1) {
-                        card.column = 3;
-                        if (!card.completedDate) {
-                            card.completedDate = new Date().toLocaleString();
-                        }
-                    }
-                });
-                this.saveCards();
-            }
+        completedTask(){
+            return this.cards.filter(c => c.column === 4)
         }
     },
     methods: {
-        addItem() {
-            if (this.newCardItems.length < 5) {
-                this.newCardItems.push('');
+        openCreateModal(){
+            this.selectedCard = null
+            this.showEditModal = true
+        },
+        openEditModal(){
+            this.selectedCard = card
+            this.showEditModal = true
+        },
+        openReturnModal(){
+            this.currentCard = card
+            this.showEditModal = true
+        },
+        closeModal(){
+            this.showEditModal = false
+            this.showReturnModal = false
+            this.showCurrentCard = null
+        },
+        deleteCard(card){
+            if(confirm('You want delete this task?')) {
+                const index = this.cards.findIndex(c => c.id === card.id)
+                this.cards.splice(index, 1)
+                this.saveCards()
             }
         },
-        removeItem() {
-            if (this.newCardItems.length > 3) {
-                this.newCardItems.pop();
+        saveCard(updateCard){
+            if(updateCard.id){
+                const index = this.cards.findIndex(c => c.id === updateCard.id)
+                this.cards.splice(index, 1, {
+                    ...updateCard,
+                    updateAt: new Date().toLocaleString()
+                });
+            }  else {
+                this.cards.push({
+                    ...updateCard,
+                    id : Date.now(),
+                    column: 1,
+                    createdAt: new Date().toLocaleString(),
+                    isOverdue: false
+                });
             }
+            this.saveCards()
         },
-        createCard() {
-            if (!this.newCardTitle.trim() || this.newCardItems.some(i => !i.trim())) {
-                alert('Please fill all fields');
-                return;
+        moveCard(card, targetColumn){
+            const newCard ={...card}
+            if(targetColumn === 4) {
+                newCard,isOverdue = new Date(card.deadline) < new Date()
             }
-
-            this.cards.push({
-                id: Date.now(),
-                title: this.newCardTitle,
-                items: this.newCardItems.map(text => ({ text, completed: false })),
-                column: 1,
-                completedDate: null
+            newCard.column = targetColumn
+            this.updateCard(newCard)
+        },
+        returnToWork(reason){
+            const newCard = {...this.currentCard}
+            newCard.column = 2
+            newCard.returnReason = reason
+            this.updateCard(newCard)
+        },
+        updateCard(newCard){
+            const index = this.cards.findIndex(c => c.id === newCard.id)
+            this.cards.splice(index, 1, {
+                ...newCard,
+                updateAt: newDate().toLocaleString()
             });
-
-            this.newCardTitle = '';
-            this.newCardItems = ['', '', ''];
+            this.saveCards()
         },
-        saveCards() {
-            localStorage.setItem('cards', JSON.stringify(this.cards));
+        saveCards(){
+            localStorage.setItem('kanban-cards', JSON.stringify(this.cards))
         },
-        loadCards() {
-            const savedCards = localStorage.getItem('cards');
-            if (savedCards) {
-                this.cards = JSON.parse(savedCards);
-            }
+        loadCards(){
+            const savedCards = localStorage.getItem('kanban-cards')
+            this.cards = savedCards ? JSON.parse(savedCards) : []
         }
     }
-});
+})

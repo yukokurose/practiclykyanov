@@ -2,45 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>ya</title>
-    <script defer src="vue.js"></script>
-    <script defer src="main.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="vue.js"></script>
+    <script src="main.js"></script>
     <link rel="stylesheet" href="../css/main.css">
+    <title>ya</title>
 </head>
 <body>
 <div id="app">
-    <div class="columns">
-        <div class="column" :class="{'blocked': isFirstColumnBlocked}">
-            <h2>To Do (max 3)</h2>
-                <div v-for="card in firstColumnCards" :key="card.id">
-                    <card-component :card="card" :editable="!isFirstColumnBlocked"/>
-                </div>
-            </div>
-            <div class="column">
-                <h2>Progress (max 5)</h2>
-                <div v-for="card in secondColumnCards" :key="card.id">
-                    <card-component :card="card" :editable="true"/>
-                </div>
-            </div>
-            <div class="column">
-                <h2>Done</h2>
-                <div v-for="card in thirdColumnCards" :key="card.id">
-                    <card-component :card="card" />
-                </div>
-            </div>
-        </div>
-        <div class="add-card-form">
-            <input v-model="newCardTitle" placeholder="Card Title">
-            <div v-for="(item, index) in newCardItems" :key="index">
-                <input v-model="newCardItems[index]" placeholder="Item text">
-            </div>
-            <button @click="addItem" :disabled="newCardItems.length >= 5">Add Item</button>
-            <button @click="removeItem" :disabled="newCardItems.length <= 3">Remove Item</button>
-            <button @click="createCard">Create Card</button>
-        </div>
+    <div class="board">
+
     </div>
 </div>
 </body>
+</html>
