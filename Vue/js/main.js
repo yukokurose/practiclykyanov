@@ -1,4 +1,30 @@
 //git add * , git commit -m "name" , potom push i vse//
+Vue.component('task-card',{
+    props: ['card', 'editable'],
+    template: `
+        <div class="card" : class="{ 'overdue' : card.isOverdue, 'completed': !card.isOverdue && card.column === 4}">
+            <div class="card-header">
+                <h3>{{ card.title }}</h3>
+                <button v-if="editable" @click="#emit('edit', 'card')" class="btn-secondary">✏️</button>
+                <button v-if="editable && card.column === 1" @click="$emit('delete')" class="btn-danger">🗑️</button>
+            </div>
+            <p>{{ card.description }}</p>
+            <div class="timestamp">
+                <div>Создано: {{ card.createdAt }}</div>
+                <div v-if="card.updateAt">Изменено: {{ card.updateAt }}</div>
+                <div>Дедлайн {{ card.deadline }}</div>
+                <div v-if="card.returnReason" class="return-reason">
+                        Причина возврата: {{ card.returnReason }}
+                </div>
+            </div>
+            <div class="card-actions">
+                <slot name="actions"></slot>
+            </div>
+        </div>
+    
+    `
+});
+
 new Vue({
     el: '#app',
     data(){
