@@ -137,6 +137,36 @@ Vue.component('modal-edit', {
     }
 });
 
+Vue.component('modal-return', {
+    template: `
+         <div class="modal-mask">
+            <div class ="modal-content">
+                <h3>Причина возврата</h3>
+                <div class="form-group">
+                    <label>Описание:</label>
+                    <input v-model="reason" placeholder="Укажите причину возврата" required>
+                </div>
+                <button class="btn-primary" @click="sconfirm">Подтвердить</button>
+                <button class="btn-secondary" @click="$emit('close')">Отмена</button>
+            </div>
+        </div>
+    `,
+    data(){
+        return{
+            reason: ''
+        }
+    },
+    methods: {
+        confirm(){
+            if(!this.reason.trim()){
+                alert('Укажите причину возврата')
+                return
+            }
+            this.$emit('confirm', this.reason)
+            this.$emit('close')
+        }
+    }
+});
 
 new Vue({
     el: '#app',
