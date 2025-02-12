@@ -88,6 +88,55 @@ Vue.component('kanban-column', {
     }
 });
 
+Vue.component('modal-edit', {
+    props: ['card'],
+    template: `
+        <div class="modal-mask">
+            <div class ="modal-content">
+                <h3>{{ card ? 'Редактирование' : 'Новая задача' }}</h3>
+                <div class="form-group">
+                    <label>Описание:</label>
+                    <textarea v-model="form.description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Дедлайн:</label>
+                    <input type="date" v-model="form-deadline" :min="minDate" required>
+                </div>
+                <button class="btn-primary" @click="save">Сохранить</button>
+                <button class="btn-secondary" @click="$emit('close')">Отмена</button>
+            </div>
+        </div>
+    `,
+    data() {
+        return {
+            form: this.card ? {...this.card} : {
+                title: '',
+                description: '',
+                deadline: ''
+            },
+            minDate: new Date().toISOString().split('T')[0]
+        }
+    },
+    methods: {
+        save(){
+            if (!this.validateForm()) return
+            this.$emit('save', this.form)
+            this.$emit('close')
+        },
+        validateForm(){
+            if(!this.form.title.trim()){
+                alert('Введите название задачи')
+                return false
+            }
+            if(!this.form.deadline){
+                alert('Выберите дедлайн')
+                return false
+            }
+            return true
+        }
+    }
+});
+
 
 new Vue({
     el: '#app',
