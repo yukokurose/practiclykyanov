@@ -169,7 +169,7 @@ Vue.component('modal-return', {
 });
 
 new Vue({
-    el: '#app',
+    element: '#app',
     data(){
         return {
             cards: [],
@@ -242,7 +242,7 @@ new Vue({
         moveCard(card, targetColumn){
             const newCard ={...card}
             if(targetColumn === 4) {
-                newCard,isOverdue = new Date(card.deadline) < new Date()
+                newCard, isOverdue = new Date(card.deadline) < new Date()
             }
             newCard.column = targetColumn
             this.updateCard(newCard)

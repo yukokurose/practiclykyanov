@@ -11,7 +11,48 @@
 <body>
 <div id="app">
     <div class="board">
+        <kanban-column
+                title="Запланированные задачи"
+                :cards="plannedTasks"
+                :can-create="true"
+                @create="openCreateModal"
+                @move="moveCard"
+                @edit="openEditModal"
+                @delete="deleteCard"
+        ></kanban-column>
 
+        <kanban-column
+                title="Задачи в работе"
+                :cards="inProgressTasks"
+                @edit="openEditModal"
+                @move="moveCard"
+        ></kanban-column>
+
+        <kanban-column
+                title="Тестирование"
+                :cards="testingTasks"
+                @edit="openEditModal"
+                @move="moveCard"
+                @return="openReturnModal"
+        ></kanban-column>
+
+        <kanban-column
+                title="Выполненные задачи"
+                :cards="completedTasks"
+        ></kanban-column>
+
+        <modal-edit
+                v-if="showEditModal"
+                :card="selectedCard"
+                @save="saveCard"
+                @close="closeModal"
+        ></modal-edit>
+
+        <modal-return
+                v-if="showReturnModal"
+                @confirm="returnToWork"
+                @close="closeModal"
+        ></modal-return>
     </div>
 </div>
 </body>
