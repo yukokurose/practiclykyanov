@@ -1,19 +1,33 @@
 Vue.component('task-card',{
     props: ['card', 'editable'],
     template: `
-                <div class="card" :class="{ 'overdue': card.isOverdue, 'completed': !card.isOverdue && card.column === 4 }">
-                    <div class="card-header">
-                        <h3>{{ card.title }}</h3>
-                        <button v-if="editable" @click="$emit('edit', card)" class="btn-secondary">✏️</button>
-                        <button v-if="editable && card.column === 1" @click="$emit('delete')" class="btn-danger">❌</button>
-                    </div>
+                 <div class="card" :class="{ 
+            'overdue': card.isOverdue, 
+            'completed': !card.isOverdue && card.column === 4,
+            'important': card.isImportant 
+        }">
+            <div class="card-header">
+                <h3>
+                    {{ card.title }}
+                    <span v-if="card.isImportant" class="important-badge">★ Важная</span>
+                </h3>
+                <div>
+                    <button v-if="editable && card.column !== 4" @click="$emit('edit')" class="btn-secondary">✏️</button>
+                    <button v-if="editable && card.column === 1" @click="$emit('delete')" class="btn-danger">❌</button>
+                </div>
+            </div>
                     <p>{{ card.description }}</p>
                     <div class="timestamp">
                         <div>Создано: {{ card.createdAt }}</div>
                         <div v-if="card.updatedAt">Изменено: {{ card.updatedAt }}</div>
                         <div>Дедлайн: {{ card.deadline }}</div>
-                        <div v-if="card.returnReason" class="return-reason">
-                            Причина возврата: {{ card.returnReason }}
+                        <div v-if="card.returnReasons && card.returnReasons.length" class="return-reasons">
+                            <strong>Причины возврата:</strong>
+                                <ul>
+                                    <li v-for="(item, index) in card.returnReasons" :key="index">
+                                    {{ item.date }} - {{ item.reason }}
+                                    </li>
+                                </ul>
                         </div>
                     </div>
                     <div class="card-actions">
@@ -34,7 +48,7 @@ Vue.component('kanban-column', {
             >
                 + Новая задача
             </button>
-            <div v-for="card in cards" :key="card.id">
+            <div v-for="card in sortedCards" :key="card.id">
                 <task-card 
                     :card="card" 
                     :editable="true"
@@ -89,6 +103,15 @@ Vue.component('kanban-column', {
                 this.$emit('delete', card);
             }
         }
+    },
+    computed: {
+        sortedCards() {
+            return [...this.cards].sort((a, b) => {
+                if (a.isImportant && !b.isImportant) return -1;
+                if (!a.isImportant && b.isImportant) return 1;
+                return 0;
+            });
+        }
     }
 });
 
@@ -98,6 +121,10 @@ Vue.component('modal-edit', {
         <div class="modal-mask">
             <div class ="modal-content">
                 <h3>{{ card ? 'Редактирование' : 'Новая задача' }}</h3>
+                <div class="form-group checkbox-group">
+    <input type="checkbox" v-model="form.isImportant">
+    <label>Важная задача</label>
+</div>
                  <div class="form-group">
                     <label>Заголовок:</label>
                     <input v-model="form.title" required>
@@ -120,7 +147,8 @@ Vue.component('modal-edit', {
             form: this.card ? {...this.card} : {
                 title: '',
                 description: '',
-                deadline: ''
+                deadline: '',
+                isImportant: false
             },
             minDate: new Date().toISOString().split('T')[0]
         }
@@ -177,7 +205,7 @@ Vue.component('modal-return', {
 
 
 new Vue({
-    el: '#123',
+    el: '#app',
     data() {
         return {
             cards: [],
@@ -258,8 +286,17 @@ new Vue({
         },
         returnToWork(reason) {
             const newCard = { ...this.currentCard };
+
+            if (!newCard.returnReasons) {
+                newCard.returnReasons = [];
+            }
+
+            newCard.returnReasons.push({
+                reason: reason,
+                date: new Date().toLocaleString()
+            });
+
             newCard.column = 2;
-            newCard.returnReason = reason;
             this.updateCard(newCard);
         },
         updateCard(newCard) {
